@@ -1,30 +1,45 @@
+# pyright: reportUnknownVariableType=false, reportUnknownMemberType=false
+import sys
+
 import pygame
 
+from asteroid import Asteroid
+from asteroidfield import AsteroidField
 from constants import *
 from player import Player
 
 
 def main():
-    pygame.init()
+    _ = pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
     dt = 0
 
-    group_updatable = pygame.sprite.Group()
-    group_drawable = pygame.sprite.Group()
+    updatable_group = pygame.sprite.Group()
+    drawable_group = pygame.sprite.Group()
+    asteroid_group = pygame.sprite.Group()
 
-    Player.containers = (group_drawable, group_updatable)
+    Asteroid.containers = (asteroid_group, drawable_group, updatable_group)
+    Player.containers = (drawable_group, updatable_group)
+    AsteroidField.containers = updatable_group
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    asteroid_field = AsteroidField()
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
 
-        screen.fill((0, 0, 0))
+        _ = screen.fill((0, 0, 0))
 
-        group_updatable.update(dt)
-        for drawable in group_drawable:
+        updatable_group.update(dt)
+
+        for asteroid in asteroid_group:
+            if player.collision(asteroid):
+                print("Game Over!")
+                sys.exit(0)
+
+        for drawable in drawable_group:
             drawable.draw(screen)
 
         pygame.display.flip()
